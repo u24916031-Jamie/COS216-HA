@@ -8,7 +8,8 @@ u25090501
 */
 
 import { Server } from "socket.io";
-import { DispatchFlight } from "./api.js";
+import { GetPassengers } from "./getPassengers.js";
+import { DispatchFlight } from "./dispatchFlight.js";
 
 export async function startSocketServer(port, passengerMap, ATCMap) {
 
