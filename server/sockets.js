@@ -8,13 +8,24 @@ u25090501
 */
 
 import { Server } from "socket.io";
-import { GetPassengers } from "./getPassengers.js";
-import { DispatchFlight } from "./dispatchFlight.js";
+import { getPassengers } from "./getPassengers.js";
+import { dispatchFlight } from "./dispatchFlight.js";
+import { notifyNoShow } from "./notifyNoShow.js";
+import { confirmBoarding } from "./confirmBoarding.js";
+import { updateFlightPosition } from "./updateFlightPosition.js";
 
-export async function startSocketServer(port, passengerMap, ATCMap) {
+const flightPositionMap = new Map();
+
+export async function startSocketServer(port) {
 
 	const io = new Server(port, { /* options */ });
+	const passengerMap = new Map();
 	const flightMap = new Map();
+	const boardingCallMap = new Map();
+	const flightTrackingMap = new Map();
+	const ATCMap = new Map();
+
+
 
 	io.on("connection", (socket) => {
 		socket.on("INIT", ({ type, username }) => {
@@ -31,7 +42,7 @@ export async function startSocketServer(port, passengerMap, ATCMap) {
 		})
 
 		socket.on("DISPATCH", (flightid) => {
-			const flightinfo = DispatchFlight(flightid);
+			const flightinfo = dispatchFlight(flightid);
 			if (flightinfo.status = "error") {
 
 				//fail
@@ -39,12 +50,28 @@ export async function startSocketServer(port, passengerMap, ATCMap) {
 			}
 
 
-
-
-			const passengers = GetPassengers(flightid);
-			for (let i = 0; i < passengers.length; i++) {
-				passengerMap.get(passengers[i]).emit("BOARDING_CALL");
+			for (const [username, passengersocket] of passengerMap) {
+				passengersocket.emit("BOARDING_CALL");
 			}
+
+			boardingCallMap.set(flightid, true);
+			setTimeout(() => {
+				boardingCallMap.set(flightid, false);
+			}, 60);
+
+			flightPositionMap.set(flightid, 0);
+			const startTime = Date.now();
+			const handle = setInterval(() => {
+				if (flightPositionMap.get(flightid) > 1.0) {
+					clearInterval(handle);
+					return;
+				}
+				const progress = (Date.now() - startTime) / (flightinfo.length * 1000);
+				updateFlightPosition(flightid, progress);
+
+				flightPositionMap.set(flightid, progress)
+			}, 1.0 / 30.0);
+
 
 		})
 		socket.on("BOARD", (flightid) => {
@@ -53,17 +80,40 @@ export async function startSocketServer(port, passengerMap, ATCMap) {
 				//fail
 				return;
 			}
-			const passengers = GetPassengers(flightid);
-			for (let i = 0; i < passengers.length; i++) {
-				socketMap.get(passengers[i]).emit("BOARDING_CALL");
+			if (!(boardingCallMap.get(flightid))) {
+				notifyNoShow(socket.data.username, flightid);
+			}
+			else {
+				confirmBoarding(socket.data.username, flightid);
 			}
 
-		})
-		socket.on("TRACK", () => {
-			socket.data.type = type;
-			socket.data.username = username;
-			socketMap.set(username, socket);
-		})
-	});
 
+
+		})
+		socket.on("TRACK", (flightid) => {
+			if (!allowedToTrack(socket.data.username, flightid)) {
+				//return error if passenger tries to track another flight
+				return;
+			}
+
+			const handle = setInterval(() => {
+				if (flightPositionMap.get(flightid) > 1.0) {
+					clearInterval(handle);
+					return;
+				}
+				flightPositionMap.set(flightid, (Date.now() - startTime) / (flightinfo.length * 1000))
+			}, 1.0 / 30.0);
+			flightTrackingMap.set(socket.data.username, flightid);
+		});
+
+		socket.on('disconnect', (reason) => {
+
+			if (socket.data.type == "passenger") {
+
+			} else if (socket.data.type == "ATC") {
+
+			}
+		});
+	});
+	return io;
 }
