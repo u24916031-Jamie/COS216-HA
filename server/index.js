@@ -36,12 +36,14 @@ async function CLI() {
 
 		if (command.trim().startsWith("FLIGHT_STATUS")) {
 			console.log("flight status");
-			getFlightStatus(parseInt(command.trim().split(" ")[1]));
+			const flightID = parseInt(command.trim().split(" ")[1]);
+			getFlightStatus(flightID);
 
 		}
 		else if (command.trim().startsWith("KILL")) {
 			console.log("kill");
-			killConnection(command.trim().split(" ")[1]);
+			const username = command.trim().split(" ")[1];
+			killConnection(username);
 		}
 		else if (command.trim() == "QUIT") {
 			break;
