@@ -13,18 +13,16 @@ import { dispatchFlight } from "./dispatchFlight.js";
 import { notifyNoShow } from "./notifyNoShow.js";
 import { confirmBoarding } from "./confirmBoarding.js";
 import { updateFlightPosition } from "./updateFlightPosition.js";
+import { getFlight } from "./getFlight.js";
 
-const flightPositionMap = new Map();
 
 export async function startSocketServer(port) {
 
 	const io = new Server(port, { /* options */ });
-	const passengerMap = new Map();
-	const flightMap = new Map();
-	const boardingCallMap = new Map();
-	const flightTrackingMap = new Map();
-	const ATCMap = new Map();
-
+	const passengerMap = new Map(); // all passengers
+	const ATCMap = new Map(); // all ATCs
+	const boardingCallSet = new Set(); // flightid to isBoarding
+	const userTrackingMap = new Map(); // username to handle for emitting POSITION;
 
 
 	io.on("connection", (socket) => {
@@ -42,35 +40,44 @@ export async function startSocketServer(port) {
 		})
 
 		socket.on("DISPATCH", (flightid) => {
-			const flightinfo = dispatchFlight(flightid);
-			if (flightinfo.status = "error") {
-
-				//fail
+			if (socket.data.type != "ATC") {
 				return;
 			}
 
 
-			for (const [username, passengersocket] of passengerMap) {
-				passengersocket.emit("BOARDING_CALL");
+			const dispatchResult = dispatchFlight(socket.data.username, flightid);
+			if (dispatchResult.status == 400) {
+
+				//fail
+				return;
+			}
+			const flightInfo = getFlight(socket.data.username, flightid);
+			updateFlightPosition(flightid, flightInfo.origin_latitude, flightInfo.origin_longitude, "Boarding")
+			for (const username of flightInfo.passengerList) {
+				passengerMap.get(username).emit("BOARDING_CALL");
 			}
 
-			boardingCallMap.set(flightid, true);
+			boardingCallSet.add(flightid);
 			setTimeout(() => {
-				boardingCallMap.set(flightid, false);
+				boardingCallSet.delete(flightid);
+				let progress = 0.0;
+				let current_latitude = flightInfo.origin_latitude;
+				let current_longitude = flightInfo.origin_longitude;
+				const handle = setInterval(() => {
+					if (progress > 1.0) {
+						clearInterval(handle);
+						updateFlightPosition(flightid, flightInfo.destination_latitude, flightInfo.destination_longitude, "Landed");
+						return;
+					}
+					progress = (Date.now() - startTime) / (flightinfo.length * 1000);
+					current_latitude = flightInfo.origin_latitude + progress * (flightInfo.destination_latitude - flightInfo.origin_latitude);
+					current_longitude = flightInfo.origin_longitude + progress * (flightInfo.destination_longitude - flightInfo.origin_longitude);
+
+					updateFlightPosition(flightid, current_latitude, current_longitude, "In Flight");
+				}, 1.0 / 30.0);
 			}, 60);
 
-			flightPositionMap.set(flightid, 0);
-			const startTime = Date.now();
-			const handle = setInterval(() => {
-				if (flightPositionMap.get(flightid) > 1.0) {
-					clearInterval(handle);
-					return;
-				}
-				const progress = (Date.now() - startTime) / (flightinfo.length * 1000);
-				updateFlightPosition(flightid, progress);
 
-				flightPositionMap.set(flightid, progress)
-			}, 1.0 / 30.0);
 
 
 		})
@@ -80,34 +87,46 @@ export async function startSocketServer(port) {
 				//fail
 				return;
 			}
-			if (!(boardingCallMap.get(flightid))) {
+			if (!(boardingCallSet.has(flightid))) {
 				notifyNoShow(socket.data.username, flightid);
 			}
-			else {
-				confirmBoarding(socket.data.username, flightid);
-			}
-
-
 
 		})
+
 		socket.on("TRACK", (flightid) => {
-			if (!allowedToTrack(socket.data.username, flightid)) {
+			if (!(getFlight(socket.data.username, flightid))) {
 				//return error if passenger tries to track another flight
 				return;
 			}
 
+
+
 			const handle = setInterval(() => {
-				if (flightPositionMap.get(flightid) > 1.0) {
+				// gives status to stop when plane has landed
+				let flightData = getFlight(socket.data.username, flightid);
+				socket.emit("POSITION", flightData.current_latitude, flightData.current_longitude, flightData.status);
+				if (flightData.status == "Landed") {
 					clearInterval(handle);
-					return;
 				}
-				flightPositionMap.set(flightid, (Date.now() - startTime) / (flightinfo.length * 1000))
+
 			}, 1.0 / 30.0);
-			flightTrackingMap.set(socket.data.username, flightid);
+
+			let handles = userTrackingMap.get(socket.data.username);
+			if (handles == undefined) {
+				handles = [handle];
+			} else {
+				handles = [...handles, handle];
+			}
+			userTrackingMap.set(socket.data.username, handles);
 		});
 
 		socket.on('disconnect', (reason) => {
-
+			const handles = userTrackingMap.get(socket.data.username);
+			if (handles != undefined) {
+				for (const handle of handles) {
+					clearInterval(handle);
+				}
+			}
 			if (socket.data.type == "passenger") {
 
 			} else if (socket.data.type == "ATC") {
@@ -115,5 +134,5 @@ export async function startSocketServer(port) {
 			}
 		});
 	});
-	return io;
+
 }
