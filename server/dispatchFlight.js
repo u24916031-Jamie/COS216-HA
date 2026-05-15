@@ -8,7 +8,7 @@ u25090501
 */
 
 
-export function dispatchFlight(flightid) {
+export function DispatchFlight(flightid) {
 	console.log(`Dispatching flight ${flightid}`);
 
 	return true;
