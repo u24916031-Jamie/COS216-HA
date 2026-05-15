@@ -1,0 +1,311 @@
+BASIC TESTS
+
+Empty body
+{}
+
+JSON thats Incorrect(removed the commas)
+{
+  "type": "Register",
+  "username": "Test"
+  "email": "test@test.com"
+}
+
+Missing API key
+{
+  "type": "GetAllFlights"
+}
+OR
+{
+  "type": "GetAllFlights",
+  "api_key": ""
+}
+
+Invalid API key
+{
+  "type": "GetAllFlights",
+  "api_key": "idfk"
+}
+
+//////////////////////////////////////////////////////////////////////
+REGISTER TESTS
+
+Normal valid Passenger
+{                                                      
+  "type": "Register",
+  "username": "Test",
+  "email": "test@test.com",
+  "password": "Password@123",
+  "user_type": "Passenger"                              
+}
+
+Normal valid ATC
+{
+  "type": "Register",
+  "username": "GreenLantern",
+  "email": "hal@league.com",
+  "password": "Greenie55$",
+  "user_type": "ATC"
+}
+
+Missing fields
+{
+  "type": "Register",
+  "username": "BruceBanner",
+  "email": "hulk@avengers.com",
+  "password": "Hulk@123"
+}
+
+Invalid email
+{
+  "type": "Register",
+  "username": "SteveRogers",
+  "email": "captainamerica.com",
+  "password": "Shield@123",
+  "user_type": "Passenger"
+}
+
+Weak password
+{
+  "type": "Register",
+  "username": "Natasha",
+  "email": "natasha@avengers.com",
+  "password": "123",
+  "user_type": "Passenger"
+}
+
+Incorrect type
+{
+  "type": "Register",
+  "username": "Thor",
+  "email": "thor@asgard.com",
+  "password": "Mjolnir@123",
+  "user_type": "idfk"
+}
+
+Dupe email
+{
+  "type": "Register",
+  "username": "Test2",
+  "email": "test@test.com",
+  "password": "Password@123",
+  "user_type": "Passenger"
+}
+
+//////////////////////////////////////////////////////////////////////
+LOGIN TESTS
+
+Basic log in
+{
+  "type": "Login",
+  "email": "peter@avengers.com",
+  "password": "Password@123"
+}
+
+Wrong password 
+{
+  "type": "Login",
+  "email": "peter@avengers.com",
+  "password": "wrong"
+}
+
+Wrong email
+{
+  "type": "Login",
+  "email": "idfk@avengers.com",
+  "password": "Password@123"
+}
+
+Missing password
+{
+  "type": "Login",
+  "email": "peter@avengers.com"
+}
+
+//////////////////////////////////////////////////////////////////////
+GET ALL FLIGHTS TESTS
+
+User is Passenger
+{
+  "type": "GetAllFlights",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV"
+}
+
+User is ATC
+{
+  "type": "GetAllFlights",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf"
+}
+
+Request type is wrong
+{
+  "type": "GetAllFlightsssss",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV"
+}
+
+//////////////////////////////////////////////////////////////////////
+GET FLIGHT TESTS
+
+User is passenger AND is on flight
+{
+  "type": "GetFlight",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+  "flight_id": 3
+}
+
+User is passenger AND is not on flight
+{
+  "type": "GetFlight",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+  "flight_id": 1
+}
+
+User is ATC
+{
+  "type": "GetFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 6
+}
+
+Flight doesnt exist
+{
+  "type": "GetFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 61
+}
+
+//////////////////////////////////////////////////////////////////////
+DISPATCH FLIGHT TESTS
+
+User is passenger(only ATC allowed)
+{
+  "type": "DispatchFlight",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+  "flight_id": 1
+}
+
+ATC dispatches flight that has scheduled status /////////////////////timestamp vs date?????
+{
+  "type": "DispatchFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 1
+}
+
+Flight missing
+{
+  "type": "DispatchFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+}
+
+Flight doesnt even exist
+{
+  "type": "DispatchFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 1000
+}
+
+Flight isnt in scheduled state
+{
+  "type": "DispatchFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 1
+}
+
+//////////////////////////////////////////////////////////////////////
+UPDATE FLIGHT POSITION TESTS
+change some latitude or longitude or status
+{
+  "type": "UpdateFlightPosition",
+  "api_key": "put in server_api_key",
+  "flight_id": 1,
+  "current_latitude": 40.6213,
+  "current_longitude": -73.7781,
+  "status": "In Flight"
+}
+
+Invalid flight status
+{
+  "type": "UpdateFlightPosition",
+  "api_key": "server_api_key",
+  "flight_id": 1,
+  "current_latitude": 40.6213,
+  "current_longitude": -73.7781,
+  "status": "In Flooooooooo"
+}
+
+Wrong server_api_key
+{
+  "type": "UpdateFlightPosition",
+  "api_key": "server_api_key",
+  "flight_id": 1,
+  "current_latitude": 40.6213,
+  "current_longitude": -73.7781,
+  "status": "In Flooooooooo"
+}
+
+
+//////////////////////////////////////////////////////////////////////
+GET AIRPORTS TESTS
+
+User is Passenger
+{
+  "type": "GetAirports",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV"
+}
+
+User is ATC
+{
+  "type": "GetAirports",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf"
+}
+
+//////////////////////////////////////////////////////////////////////
+BOARD FLIGHT TESTS
+
+User is ATC(only passenger can board)
+{
+  "type": "BoardFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+  "flight_id": 1
+}
+
+Passenger is already boarded
+{
+  "type": "BoardFlight",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+  "flight_id": 6
+}
+
+Passenger tries to board flight they arent even on
+{
+  "type": "BoardFlight",
+  "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+  "flight_id": 4
+}
+
+Passenger tries to board flight but the flight hasnt been dispatched
+{
+  "type": "BoardFlight",
+  "api_key": "3F999FT14y5FfT04PKrPQTFvI2L0FAf1",
+  "flight_id": 10
+}
+
+Passenger boards flight successfully within the timeframe of 1 min after dispatch time
+//IMPORTANT: for this one you have literally 1 minute so you have to be quick.
+//CHECK BEFOREHAND IF THE FLIGHT HAS dispatched_at == NULL AND HAS STATUS == scheduled AND CHECK WHICH PASSENGER IS ON THAT FLIGHT TO TRY TO BOARD THEM
+//INSTRUCTIONS: Dispatch the flight using the first JSON body, change the flight_id then immediately send the second JSON body but change the api_key and flight_id to the appropriate passenger for that flight
+
+dispatch flight 
+{
+  "type": "DispatchFlight",
+  "api_key": "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",    
+  "flight_id": 10
+}
+board immediately
+{
+  "type": "BoardFlight",
+  "api_key": "3F999FT14y5FfT04PKrPQTFvI2L0FAf1",
+  "flight_id": 10
+}
+
+
+
