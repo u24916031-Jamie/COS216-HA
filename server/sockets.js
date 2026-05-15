@@ -25,9 +25,10 @@ export async function startSocketServer(port) {
 
 
 	io.on("connection", (socket) => {
-		socket.on("INIT", ({ type, username }) => {
+		socket.on("INIT", (type, username, apikey) => {
 			socket.data.type = type;
 			socket.data.username = username;
+			socket.data.apikey = apikey;
 			if (type == "passenger") {
 				passengerMap.set(username, socket);
 			} else if (type == "ATC") {
