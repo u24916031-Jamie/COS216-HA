@@ -9,7 +9,7 @@ u25090501
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 
-import { getFlightStatus } from './flightStatus.js';
+import { getFlightStatus } from './getFlightStatus.js';
 import { killConnection } from './killConnection.js';
 import { startSocketServer } from './sockets.js';
 
@@ -22,7 +22,7 @@ async function CLI() {
 	}
 	const passengerMap = new Map();
 	const ATCMap = new Map();
-	startSocketServer(port, passengerMap, ATCMap);
+	const io = await startSocketServer(port, passengerMap, ATCMap);
 	console.log(`Started socket server on port: ${port}`);
 	const rl = readline.createInterface({ input, output });
 
@@ -36,7 +36,8 @@ async function CLI() {
 
 		if (command.trim().startsWith("FLIGHT_STATUS")) {
 			console.log("flight status");
-			getFlightStatus(parseInt(command.trim().split(" ")[1]));
+			const flightid = parseInt(command.trim().split(" ")[1]);
+			getFlightStatus(flightid);
 
 		}
 		else if (command.trim().startsWith("KILL")) {
@@ -44,6 +45,7 @@ async function CLI() {
 			killConnection(command.trim().split(" ")[1]);
 		}
 		else if (command.trim() == "QUIT") {
+			//broadcast shutdown message
 			break;
 		}
 		else if (command.trim().toLowerCase() == "help") {
@@ -54,8 +56,10 @@ async function CLI() {
 		}
 
 	}
-
+	console.log("here");
 	rl.close();
+	console.log("here2");
+	io.close();
 }
 
 
