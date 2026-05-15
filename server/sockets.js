@@ -135,4 +135,7 @@ export async function startSocketServer(port) {
 		});
 	});
 
+
+	return io;
+
 }
