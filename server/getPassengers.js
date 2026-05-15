@@ -9,7 +9,7 @@ u25090501
 
 
 
-export function GetPassengers(flightid) {
+export function getPassengers(flightid) {
 	console.log(`Fetching passengers for flight wit h ${flightid}`);
 
 	return true;

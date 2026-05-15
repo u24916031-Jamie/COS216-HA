@@ -1,10 +1,10 @@
 
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+
+ $_ENV = parse_ini_file('.env');
+
 
 $db_server = "wheatley.cs.up.ac.za";
 $db_user   = $_ENV['DB_USER'];
