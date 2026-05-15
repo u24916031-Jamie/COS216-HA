@@ -10,11 +10,7 @@ $db_server = "wheatley.cs.up.ac.za";
 $db_user   = $_ENV['DB_USER'];
 $db_pass   = $_ENV['DB_PASS'];
 $db_name   = $_ENV['DB_NAME'];
-// $db_server = "wheatley.cs.up.ac.za";
-// $db_user   = "u25090501";
-// $db_pass   = "6QA56TPMT4ACC5Z64LFB34P47ODBAASA";
-// $db_name   = "u25090501";
-// $conn = "";
+$conn = "";
 
 $conn = mysqli_connect($db_server, $db_user, $db_pass , $db_name);
 
