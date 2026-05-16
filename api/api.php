@@ -381,6 +381,7 @@ if ($type === "GetFlight") {
 
     //check if key is empty or invalid
     if (!isset($data["api_key"]) || empty($data["api_key"])) {
+		http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing API key"
@@ -844,6 +845,74 @@ if ($type === "BoardFlight") {
         ]
     ]);
 
+    exit;
+}
+if ($type === "GetCoordinates") {
+
+    //same old story, test for key then flight id
+
+    if (!isset($data["api_key"]) || empty($data["api_key"])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing API key"
+        ]);
+        exit;
+    }
+    $user = validateApiKey($db, $data["api_key"]);
+
+    if (!isset($data["flight_id"])) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Missing flight id"
+        ]);
+        exit;
+    }
+    $flight_id = (int)$data["flight_id"];
+
+    //so basically select origin name+lat+long then same for destination, join with airports twice, first for origin airport then for the destination
+    $sql = $db->prepare("
+        SELECT origin.name AS oriname,origin.latitude AS orilatitude, origin.longitude AS orilongitude,
+        destination.name AS desname, destination.latitude AS deslatitude, 
+        destination.longitude AS deslongitude
+        FROM Flights
+        JOIN Airports AS origin ON Flights.origin_airport_id = origin.id
+        JOIN Airports AS destination ON Flights.destination_airport_id = destination.id WHERE Flights.id = ?");
+
+    $sql->bind_param("i", $flight_id);
+    $sql->execute();
+    $result = $sql->get_result();
+
+    //no rows so no flight
+    if ($result->num_rows === 0) {
+        http_response_code(400);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Flight not found"
+        ]);
+        exit;
+    }
+
+    $airports = $result->fetch_assoc();
+
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "data" => [
+            "flight_id" => $flight_id,
+            "origin : " => [
+                "name" => $airports["oriname"],
+                "latitude" => $airports["orilatitude"],
+                "longitude" => $airports["orilongitude"]
+            ],
+            "destination : " => [
+                "name" => $airports["desname"],
+                "latitude" => $airports["deslatitude"],
+                "longitude" => $airports["deslongitude"]
+            ]
+        ]
+    ]);
     exit;
 }
 
