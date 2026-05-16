@@ -8,8 +8,29 @@ u25090501
 */
 
 
-export function dispatchFlight(flightid) {
-	console.log(`Dispatching flight ${flightid}`);
+export function dispatchFlight(flightid, api_key) {
+	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
+	const encoded = btoa(unencoded);
+	const data = {
+		flight_id: flightid,
+		api_key: api_key,
+		type: "DispatchFlight"
+	};
+	try {
 
-	return true;
+		const res = await fetch("https://wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php", {
+			method: "POST",
+			headers: {
+				"Authorization": `Basic ${encoded}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await res.json();
+		return json;
+	}
+	catch (err) {
+		console.error("Network Error:", err)
+	}
+	return undefined;
 }

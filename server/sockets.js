@@ -14,6 +14,7 @@ import { notifyNoShow } from "./notifyNoShow.js";
 import { confirmBoarding } from "./confirmBoarding.js";
 import { updateFlightPosition } from "./updateFlightPosition.js";
 import { getFlight } from "./getFlight.js";
+import { getCoordinates } from "./getCoordinates.js";
 
 //random change
 
@@ -28,10 +29,10 @@ export async function startSocketServer(port) {
 
 
 	io.on("connection", (socket) => {
-		socket.on("INIT", (type, username, apikey) => {
+		socket.on("INIT", (type, username, api_key) => {
 			socket.data.type = type;
 			socket.data.username = username;
-			socket.data.apikey = apikey;
+			socket.data.api_key = api_key;
 			if (type == "passenger") {
 				passengerMap.set(username, socket);
 			} else if (type == "ATC") {
@@ -48,33 +49,31 @@ export async function startSocketServer(port) {
 			}
 
 
-			const dispatchResult = dispatchFlight(socket.data.username, flightid);
-			if (dispatchResult.status == 400) {
+			dispatchFlight(flightid, socket.data.api_key);
 
-				//fail
-				return;
-			}
-			const flightInfo = getFlight(socket.data.username, flightid);
-			updateFlightPosition(flightid, flightInfo.origin_latitude, flightInfo.origin_longitude, "Boarding")
+			const flightInfo = (await getFlight(flightid, socket.data.api_key)).data;
+			const coordinates = (await getCoordinates(flightid, socket.data.api_key)).data;
+
+
 			for (const username of flightInfo.passengerList) {
-				passengerMap.get(username).emit("BOARDING_CALL");
+				passengerMap.get(username).emit("BOARDING_CALL", flightid);
 			}
 
 			boardingCallSet.add(flightid);
 			setTimeout(() => {
 				boardingCallSet.delete(flightid);
 				let progress = 0.0;
-				let current_latitude = flightInfo.origin_latitude;
-				let current_longitude = flightInfo.origin_longitude;
+				let current_latitude = coordinates.origin.latitude;
+				let current_longitude = coordinates.origin.longitude;
 				const handle = setInterval(() => {
 					if (progress > 1.0) {
 						clearInterval(handle);
-						updateFlightPosition(flightid, flightInfo.destination_latitude, flightInfo.destination_longitude, "Landed");
+						updateFlightPosition(flightid, coordinates.destination.latitude, coordinates.destination.longitude, "Landed");
 						return;
 					}
-					progress = (Date.now() - startTime) / (flightinfo.length * 1000);
-					current_latitude = flightInfo.origin_latitude + progress * (flightInfo.destination_latitude - flightInfo.origin_latitude);
-					current_longitude = flightInfo.origin_longitude + progress * (flightInfo.destination_longitude - flightInfo.origin_longitude);
+					progress = (Date.now() - startTime) / (parseFloat(flightInfo.flight_duration_hours) * 1000);
+					current_latitude = coordinates.origin.latitude + progress * (coordinates.destination.latitude - coordinates.origin.latitude);
+					current_longitude = coordinates.origin.longitude + progress * (coordinates.destination.longitude - coordinates.origin.longitude);
 
 					updateFlightPosition(flightid, current_latitude, current_longitude, "In Flight");
 				}, 1.0 / 30.0);
