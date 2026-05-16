@@ -13,7 +13,7 @@ import { getCoordinates } from './getCoordinates.js'
 
 export async function getFlightStatus(flightid) {
 
-	const res = await getFlight(flightid, process.env.APIKEY);
+	const res = await getFlight(flightid, process.env.SERVERAPIKEY);
 
 	const flightData = res.data.flight;
 	const passengers = res.data.passengers;
@@ -27,7 +27,7 @@ export async function getFlightStatus(flightid) {
 		totalBooked++;
 	}
 
-	const airports = (await getCoordinates(flightid, process.env.APIKEY)).data;
+	const airports = (await getCoordinates(flightid, process.env.SERVERAPIKEY)).data;
 	const current = flightData.current_latitude;
 	const start = airports.origin.latitude;
 	const end = airports.destination.latitude;
