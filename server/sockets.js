@@ -54,8 +54,9 @@ export async function startSocketServer(port) {
 			const coordinates = (await getCoordinates(flightid, socket.data.api_key)).data;
 
 
-			for (const username of flightInfo.passengerList) {
-				passengerMap.get(username).emit("BOARDING_CALL", flightid);
+
+			for (const passenger of flightInfo.passengers) {
+				passengerMap.get(passenger.username).emit("BOARDING_CALL", flightid);
 			}
 
 			boardingCallSet.add(flightid);
