@@ -410,7 +410,7 @@ if ($type === "GetFlight") {
         /*gets all flights info, get id and username for passengers, left join since there could be flights with no passengers*/
         $sql = $db->prepare("
             SELECT
-            Flights.*, Users.id AS passenger_id, Users.username
+            Flights.*, Users.id AS passenger_id, Users.username, Users.boarding_confirmed
             FROM Flights
             LEFT JOIN Passenger_Flights ON Passenger_Flights.flight_id = Flights.id
             LEFT JOIN Users ON Users.id = Passenger_Flights.passenger_id
@@ -452,7 +452,8 @@ if ($type === "GetFlight") {
         if (!empty($row["passenger_id"])) {
             $passengers[] = [
                 "id" => $row["passenger_id"],
-                "username" => $row["username"]
+                "username" => $row["username"],
+				"boarding_confirmed" => $row["boarding_confirmed"]
             ];
         }
     }
