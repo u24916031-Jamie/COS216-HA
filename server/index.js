@@ -34,7 +34,6 @@ async function CLI() {
 		}
 
 		if (command.trim().startsWith("FLIGHT_STATUS")) {
-			console.log("flight status");
 			const flightid = parseInt(command.trim().split(" ")[1]);
 			await getFlightStatus(flightid);
 
