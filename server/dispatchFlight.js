@@ -8,7 +8,7 @@ u25090501
 */
 
 
-export function dispatchFlight(flightid, api_key) {
+export async function dispatchFlight(flightid, api_key) {
 	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
 	const encoded = btoa(unencoded);
 	const data = {

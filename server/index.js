@@ -60,10 +60,7 @@ async function CLI() {
 		}
 
 	}
-	console.log("here");
 	rl.close();
-	console.log("here2");
-	io.close();
 }
 
 

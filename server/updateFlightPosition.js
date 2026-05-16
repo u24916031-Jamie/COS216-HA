@@ -8,7 +8,7 @@ u25090501
 */
 
 
-export function updateFlightPosition(flightid, current_latitude, current_longitude, status) {
+export async function updateFlightPosition(flightid, current_latitude, current_longitude, status) {
 	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
 	const encoded = btoa(unencoded);
 	const data = {

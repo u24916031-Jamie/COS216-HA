@@ -43,13 +43,13 @@ export async function startSocketServer(port) {
 			}
 		})
 
-		socket.on("DISPATCH", (flightid) => {
+		socket.on("DISPATCH", async (flightid) => {
 			if (socket.data.type != "ATC") {
 				return;
 			}
 
 
-			dispatchFlight(flightid, socket.data.api_key);
+			await dispatchFlight(flightid, socket.data.api_key);
 
 			const flightInfo = (await getFlight(flightid, socket.data.api_key)).data;
 			const coordinates = (await getCoordinates(flightid, socket.data.api_key)).data;
@@ -83,7 +83,7 @@ export async function startSocketServer(port) {
 
 
 		})
-		socket.on("BOARD", (flightid) => {
+		socket.on("BOARD", async (flightid) => {
 			if (!BoardFlight(socket.data.username, flightid)) {
 
 				//fail
@@ -95,7 +95,7 @@ export async function startSocketServer(port) {
 
 		})
 
-		socket.on("TRACK", (flightid) => {
+		socket.on("TRACK", async (flightid) => {
 			if (!(getFlight(socket.data.username, flightid))) {
 				//return error if passenger tries to track another flight
 				return;
@@ -122,7 +122,7 @@ export async function startSocketServer(port) {
 			userTrackingMap.set(socket.data.username, handles);
 		});
 
-		socket.on('disconnect', (reason) => {
+		socket.on('disconnect', async (reason) => {
 			const handles = userTrackingMap.get(socket.data.username);
 			if (handles != undefined) {
 				for (const handle of handles) {
