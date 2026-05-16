@@ -33,7 +33,7 @@ function validateApiKey($db, $apikey)
 
     //no rows so invalid
     if ($result->num_rows === 0) {
-
+    http_response_code(401); 
         echo json_encode([
             "status" => "error",
             "message" => "Invalid API key"
@@ -70,10 +70,10 @@ $db = Database::instance()->conn;
 
 //get input to run tests then perform queries
 $rawInput = file_get_contents("php://input");
-
 $data = json_decode($rawInput, true);
 
 if (!$data || !isset($data["type"])) {
+    http_response_code(400);
     echo json_encode([
         "status" => "error",
         "message" => "Invalid request"
@@ -92,7 +92,7 @@ if ($type === "Register") {
         if (
             !isset($data[$field]) || trim($data[$field]) === ""
         ) {
-
+            http_response_code(400);
             echo json_encode([
                 "status" => "error",
                 "message" => "Missing parameters"
@@ -110,7 +110,7 @@ if ($type === "Register") {
     $allowedTypes = ["Passenger", "ATC"];  //array for types, if input type not in this array then invalid
 
     if (!in_array($user_type, $allowedTypes)) {
-
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Invalid user type"
@@ -122,7 +122,7 @@ if ($type === "Register") {
     $emailRegex = "/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/";
 
     if (!preg_match($emailRegex, $email)) { //checks if input email matches regex 
-
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Invalid email format"
@@ -134,7 +134,7 @@ if ($type === "Register") {
     $passwordRegex = "/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/";
 
     if (!preg_match($passwordRegex, $password)) {   //checks if input password matches regex
-
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Weak password"
@@ -152,7 +152,7 @@ if ($type === "Register") {
     $result = $sql->get_result();
 
     if ($result->num_rows > 0) {
-
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Email already exists"
@@ -183,7 +183,7 @@ if ($type === "Register") {
     );
 
     if (!$sql->execute()) {
-
+        http_response_code(500);
         echo json_encode([
             "status" => "error",
             "message" => "Database error",
@@ -191,7 +191,7 @@ if ($type === "Register") {
         ]);
         exit;
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "timestamp" => time(),
@@ -205,11 +205,8 @@ if ($type === "Register") {
 
 if ($type === "Login") {
 
-    if (
-        !isset($data["email"]) ||
-        !isset($data["password"])
-    ) {
-
+    if (!isset($data["email"]) || !isset($data["password"])) {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing parameters"
@@ -232,7 +229,7 @@ if ($type === "Login") {
 
     //couldnt find email so return error
     if ($result->num_rows === 0) {
-
+        http_response_code(401);
         echo json_encode([
             "status" => "error",
             "message" => "Invalid email or password"
@@ -250,14 +247,14 @@ if ($type === "Login") {
     takes input password then adds the salt from the database then hash it using the same hashing algorithm then checks if the newly hashed password matches the hashed password in the database
     */
     if ($hashedInput !== $user["password"]) {
-
+        http_response_code(401);
         echo json_encode([
             "status" => "error",
             "message" => "Invalid email or password"
         ]);
         exit;
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "timestamp" => time(),
@@ -278,6 +275,7 @@ if ($type === "GetAllFlights") {
 
     //check if key is empty or valid, if valid $user get row from result
     if (!isset($data["api_key"]) || empty($data["api_key"])) {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing API key"
@@ -302,7 +300,7 @@ if ($type === "GetAllFlights") {
         while ($row = $result->fetch_assoc()) {
             array_push($flights, $row);
         }
-
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
             "user type" => "ATC",
@@ -350,7 +348,7 @@ if ($type === "GetAllFlights") {
         while ($row = $result->fetch_assoc()) {
             array_push($flights, $row);
         }
-
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
             "user type" => "Passenger",
@@ -359,7 +357,7 @@ if ($type === "GetAllFlights") {
 
         exit;
     }
-
+    http_response_code(400);
     echo json_encode([
         "status" => "error",
         "message" => "Invalid user type"
@@ -371,6 +369,7 @@ if ($type === "GetAllFlights") {
 if ($type === "GetFlight") {
 
     if (!isset($data["flight_id"])) {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing flight id"
@@ -411,7 +410,7 @@ if ($type === "GetFlight") {
         /*gets all flights info, get id and username for passengers, left join since there could be flights with no passengers*/
         $sql = $db->prepare("
             SELECT
-            Flights.*, Users.id AS passenger_id, Users.username
+            Flights.*, Users.id AS passenger_id, Users.username, Users.boarding_confirmed
             FROM Flights
             LEFT JOIN Passenger_Flights ON Passenger_Flights.flight_id = Flights.id
             LEFT JOIN Users ON Users.id = Passenger_Flights.passenger_id
@@ -424,6 +423,7 @@ if ($type === "GetFlight") {
     $result = $sql->get_result();
 
     if ($result->num_rows === 0) {
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Flight not found"
@@ -452,12 +452,14 @@ if ($type === "GetFlight") {
         if (!empty($row["passenger_id"])) {
             $passengers[] = [
                 "id" => $row["passenger_id"],
-                "username" => $row["username"]
+                "username" => $row["username"],
+				"boarding_confirmed" => $row["boarding_confirmed"]
             ];
         }
     }
     //show the arrays in the response but passengers dont get passenger list
     if ($user_type === "Passenger") {
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
             "data" => [
@@ -466,6 +468,7 @@ if ($type === "GetFlight") {
         ]);
         exit;
     } else if ($user_type === "ATC") {
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
             "data" => [
@@ -484,6 +487,7 @@ if ($type === "DispatchFlight") {
     $flight_id = (int)$data["flight_id"];
 
     if (!isset($data["api_key"]) || empty($data["api_key"])) {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing API key"
@@ -494,6 +498,7 @@ if ($type === "DispatchFlight") {
     $user = validateApiKey($db, $data["api_key"]);
 
     if ($user["type"] !== "ATC") {
+        http_response_code(403);
         echo json_encode([
             "status" => "error",
             "message" => "Only ATC can dispatch flights"
@@ -503,6 +508,7 @@ if ($type === "DispatchFlight") {
 
     //check flight id 
     if (!isset($data["flight_id"])) {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Missing flight id"
@@ -516,6 +522,7 @@ if ($type === "DispatchFlight") {
     $result = $checkSql->get_result();
 
     if ($result->num_rows === 0) {
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Flight not found"
@@ -548,13 +555,14 @@ if ($type === "DispatchFlight") {
     $updateSql->bind_param("i", $flight_id);
 
     if (!$updateSql->execute()) {
+        http_response_code(500);
         echo json_encode([
             "status" => "error",
             "message" => "Failed to dispatch flight"
         ]);
         exit;
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "message" => "Flight dispatched",
@@ -576,7 +584,7 @@ if ($type === "UpdateFlightPosition") {
         !isset($data["api_key"]) ||
         $data["api_key"] !== $SERVER_API_KEY
     ) {
-
+        http_response_code(401);
         echo json_encode([
             "status" => "error",
             "message" => "Unauthorized"
@@ -591,7 +599,7 @@ if ($type === "UpdateFlightPosition") {
     foreach ($required as $field) {
 
         if (!isset($data[$field]) || empty($data[$field])) {
-
+            http_response_code(400);
             echo json_encode([
                 "status" => "error",
                 "message" => "Missing parameter: $field"
@@ -613,7 +621,7 @@ if ($type === "UpdateFlightPosition") {
     $allowedStatuses = ["Boarding", "In Flight", "Landed"];
 
     if (!in_array($status, $allowedStatuses)) {
-
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Invalid flight status"
@@ -631,7 +639,7 @@ if ($type === "UpdateFlightPosition") {
     $checkResult = $checkSql->get_result();
 
     if ($checkResult->num_rows === 0) {
-
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Flight not found"
@@ -653,7 +661,7 @@ if ($type === "UpdateFlightPosition") {
     );
 
     if (!$updateSql->execute()) {
-
+        http_response_code(500);
         echo json_encode([
             "status" => "error",
             "message" => "Could not update flight position"
@@ -661,7 +669,7 @@ if ($type === "UpdateFlightPosition") {
 
         exit;
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "message" => "Flight position updated",
@@ -679,6 +687,7 @@ if ($type === "UpdateFlightPosition") {
 if ($type === "GetAirports") {
 
     if (!isset($data["api_key"]) || empty($data["api_key"])) {
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Missing API key"
@@ -700,7 +709,7 @@ if ($type === "GetAirports") {
     while ($row = $result->fetch_assoc()) {
         array_push($airports, $row);
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "data" => $airports
@@ -721,6 +730,7 @@ if ($type === "BoardFlight") {
 
     //checks if key is empty or invalid
     if (!isset($data["api_key"]) || empty($data["api_key"])) {
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Missing API key"
@@ -734,6 +744,7 @@ if ($type === "BoardFlight") {
 
     //ATC tries to board
     if ($user["type"] !== "Passenger") {
+        http_response_code(403);
         echo json_encode([
             "status" => "error",
             "message" => "Only passengers can board flights"
@@ -759,6 +770,7 @@ if ($type === "BoardFlight") {
 
     //pasenger not on flight
     if ($bookingResult->num_rows === 0) {
+        http_response_code(404);
         echo json_encode([
             "status" => "error",
             "message" => "Flight booking not found"
@@ -770,6 +782,7 @@ if ($type === "BoardFlight") {
 
     //passenger tries to board again for some reason
     if ((int)$booking["boarding_confirmed"] === 1) {
+        http_response_code(200);
         echo json_encode([
             "status" => "success",
             "message" => "Passenger already boarded",
@@ -783,6 +796,7 @@ if ($type === "BoardFlight") {
 
     //passenger tries to board but the flight hasnt even been dispatched
     if (empty($booking["dispatched_at"]) || $booking["dispatched_at"] === "0000-00-00 00:00:00") {
+        http_response_code(400);
         echo json_encode([
             "status" => "error",
             "message" => "Flight has not been dispatched"
@@ -797,7 +811,6 @@ if ($type === "BoardFlight") {
 
     if (($currentTime - $dispatchTime) > $boardingWindowSec) {
         http_response_code(400);
-
         echo json_encode([
             "status" => "error",
             "message" => "Boarding confirmation window expired",
@@ -814,13 +827,14 @@ if ($type === "BoardFlight") {
     $updateSql->bind_param("ii", $flight_id, $passenger_id);
 
     if (!$updateSql->execute()) {
+        http_response_code(500);
         echo json_encode([
             "status" => "error",
             "message" => "Could not confirm boarding"
         ]);
         exit;
     }
-
+    http_response_code(200);
     echo json_encode([
         "status" => "success",
         "message" => "Boarding confirmed",
@@ -834,6 +848,7 @@ if ($type === "BoardFlight") {
 }
 
 //all types fail so return invalid
+http_response_code(400);
 echo json_encode([
     "status" => "error",
     "message" => "Invalid request type"
