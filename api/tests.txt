@@ -307,5 +307,27 @@ board immediately
   "flight_id": 10
 }
 
-
+//////////////////////////////////////////////////////////////////////
+GET COORDINATES TESTS
+{
+    "type": "GetCoordinates",
+    "api_key": "KdGn8ymvvqX29RwjxLpJ4IdPbjKRXeBV",
+    "flight_id": 1
+}
+example response :
+{
+    "status": "success",
+    "data": {
+        "flight_id": 1,
+        "origin : ": {
+            "name": "John F. Kennedy International",
+            "latitude": 40.6413,
+            "longitude": -73.7781
+        },
+        "destination : ": {
+            "name": "Heathrow",
+            "latitude": 51.47,
+            "longitude": -0.4543
+        }
+}
 
