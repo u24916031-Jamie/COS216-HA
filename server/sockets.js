@@ -8,7 +8,6 @@ u25090501
 */
 
 import { Server } from "socket.io";
-import { getPassengers } from "./getPassengers.js";
 import { dispatchFlight } from "./dispatchFlight.js";
 import { notifyNoShow } from "./notifyNoShow.js";
 import { confirmBoarding } from "./confirmBoarding.js";
@@ -25,7 +24,7 @@ export async function startSocketServer(port) {
 	const passengerMap = new Map(); // all passengers
 	const ATC = {} // all ATCs
 	const boardingCallSet = new Set(); // flightid to isBoarding
-	const userTrackingMap = new Map(); // username to handle for emitting POSITION;
+	const userTrackingMap = new Map(); // username to set of handles for emitting POSITION;
 
 
 	io.on("connection", (socket) => {
@@ -95,43 +94,45 @@ export async function startSocketServer(port) {
 		})
 
 		socket.on("TRACK", async (flightid) => {
-			if (!(getFlight(socket.data.username, flightid))) {
+			const res = await getFlight(flightid, socket.data.api_key)
+			if (!res) {
 				//return error if passenger tries to track another flight
 				return;
 			}
-
+			if (!(userTrackingMap.get(socket.data.username))) {
+				userTrackingMap.set(socket.data.username, new Set());
+			}
+			const handles = userTrackingMap.get(socket.data.username);
 
 
 			const handle = setInterval(() => {
 				// gives status to stop when plane has landed
-				let flightData = getFlight(socket.data.username, flightid);
-				socket.emit("POSITION", flightData.current_latitude, flightData.current_longitude, flightData.status);
+				let flightData = getFlight(flightid, socket.data.api_key);
+				socket.emit("POSITION", flightData.data.current_latitude, flightData.data.current_longitude, flightData.data.status);
 				if (flightData.status == "Landed") {
 					clearInterval(handle);
+					handles.delete(handle);
 				}
 
 			}, 1.0 / 30.0);
 
-			let handles = userTrackingMap.get(socket.data.username);
-			if (handles == undefined) {
-				handles = [handle];
-			} else {
-				handles = [...handles, handle];
-			}
-			userTrackingMap.set(socket.data.username, handles);
+			handles.add(handle)
 		});
 
 		socket.on('disconnect', async (reason) => {
 			const handles = userTrackingMap.get(socket.data.username);
-			if (handles != undefined) {
+			if (handles) {
 				for (const handle of handles) {
 					clearInterval(handle);
 				}
 			}
 			if (socket.data.type == "passenger") {
-
+				passengerMap.delete(socket.data.username);
 			} else if (socket.data.type == "ATC") {
-
+				for (const [username, socket] of passengerMap) {
+					socket.emit("ATCDISCONNECT");
+				}
+				ATC = {};
 			}
 		});
 	});
