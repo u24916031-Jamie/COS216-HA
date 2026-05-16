@@ -23,7 +23,7 @@ export async function startSocketServer(port) {
 
 	const io = new Server(port, { /* options */ });
 	const passengerMap = new Map(); // all passengers
-	const ATCMap = new Map(); // all ATCs
+	const ATC = {} // all ATCs
 	const boardingCallSet = new Set(); // flightid to isBoarding
 	const userTrackingMap = new Map(); // username to handle for emitting POSITION;
 
@@ -36,7 +36,7 @@ export async function startSocketServer(port) {
 			if (type == "passenger") {
 				passengerMap.set(username, socket);
 			} else if (type == "ATC") {
-				ATCMap.set(username, socket);
+				ATC = { username: username, socket: socket };
 			}
 			else {
 				//INVALID TYPE;
@@ -84,13 +84,12 @@ export async function startSocketServer(port) {
 
 		})
 		socket.on("BOARD", async (flightid) => {
-			if (!BoardFlight(socket.data.username, flightid)) {
-
-				//fail
-				return;
+			if (boardingCallSet.has(flightid)) {
+				await confirmBoarding(flightid, socket.data.api_key);
 			}
-			if (!(boardingCallSet.has(flightid))) {
-				notifyNoShow(socket.data.username, flightid);
+			else {
+				await notifyNoShow(ATC, flightid, socket.data.username);
+
 			}
 
 		})
