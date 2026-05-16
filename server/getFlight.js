@@ -9,10 +9,32 @@ u25090501
 
 
 
-export function getFlight(flightid) {
+export async function getFlight(flightid) {
 	console.log(`Fetching flight data for flight with id: ${flightid}`);
 
+	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
+	const encoded = btoa(unencoded);
+	const data = {
+		flight_id: flightid,
+		api_key: "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+		type: "GetFlight"
+	};
+	try {
 
-	// return null or undefined if not allowed
-	return true;
+		const res = await fetch("https://wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php", {
+			method: "POST",
+			headers: {
+				"Authorization": `Basic ${encoded}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await res.json();
+		console.log(json);
+		return json;
+	}
+	catch (err) {
+		console.error("Network Error:", err)
+	}
+	return undefined;
 }

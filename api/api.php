@@ -70,7 +70,6 @@ $db = Database::instance()->conn;
 
 //get input to run tests then perform queries
 $rawInput = file_get_contents("php://input");
-
 $data = json_decode($rawInput, true);
 
 if (!$data || !isset($data["type"])) {

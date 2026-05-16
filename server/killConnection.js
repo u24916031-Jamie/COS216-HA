@@ -8,6 +8,14 @@ u25090501
 */
 
 
-export function killConnection(username) {
+export async function killConnection(io, username) {
 	console.log(`Killing connection with username: ${username}`);
+
+	for (const socket of await io.sockets()) {
+		if (socket.data.username == username) {
+			socket.emit("KILLED");
+			socket.disconnect(true);
+		}
+	}
+
 }

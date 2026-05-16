@@ -8,10 +8,9 @@ u25090501
 */
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
-
-import { getFlightStatus } from './getFlightStatus.js';
 import { killConnection } from './killConnection.js';
 import { startSocketServer } from './sockets.js';
+import { getFlightStatus } from './getFlightStatus.js';
 
 async function CLI() {
 	const args = process.argv.slice(2);
@@ -37,19 +36,25 @@ async function CLI() {
 		if (command.trim().startsWith("FLIGHT_STATUS")) {
 			console.log("flight status");
 			const flightid = parseInt(command.trim().split(" ")[1]);
-			getFlightStatus(flightid);
+			await getFlightStatus(flightid);
 
 		}
 		else if (command.trim().startsWith("KILL")) {
 			console.log("kill");
-			killConnection(command.trim().split(" ")[1]);
+			const username = command.trim().split(" ")[1];
+			await killConnection(io, username);
+
 		}
 		else if (command.trim() == "QUIT") {
-			//broadcast shutdown message
+			io.emit("QUIT");
+			io.close();
 			break;
 		}
 		else if (command.trim().toLowerCase() == "help") {
-			console.log()
+			console.log("Valid commands:")
+			console.log("FLIGHT_STATUS <flightid>")
+			console.log("KILL <username>")
+			console.log("QUIT");
 		}
 		else {
 			console.log(`Entered command "${command}" not recognised`);
