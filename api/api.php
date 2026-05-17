@@ -416,7 +416,6 @@ if ($type === "GetFlight") {
             LEFT JOIN Passenger_Flights ON Passenger_Flights.flight_id = Flights.id
             LEFT JOIN Users ON Users.id = Passenger_Flights.passenger_id
             WHERE Flights.id = ?");
-
         $sql->bind_param("i", $flight_id);
     }
 
@@ -901,12 +900,12 @@ if ($type === "GetCoordinates") {
         "status" => "success",
         "data" => [
             "flight_id" => $flight_id,
-            "origin : " => [
+            "origin" => [
                 "name" => $airports["oriname"],
                 "latitude" => $airports["orilatitude"],
                 "longitude" => $airports["orilongitude"]
             ],
-            "destination : " => [
+            "destination" => [
                 "name" => $airports["desname"],
                 "latitude" => $airports["deslatitude"],
                 "longitude" => $airports["deslongitude"]

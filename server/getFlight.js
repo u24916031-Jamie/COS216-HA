@@ -9,14 +9,13 @@ u25090501
 
 
 
-export async function getFlight(flightid) {
-	console.log(`Fetching flight data for flight with id: ${flightid}`);
+export async function getFlight(flightid, api_key) {
 
 	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
 	const encoded = btoa(unencoded);
 	const data = {
 		flight_id: flightid,
-		api_key: "cgfxwKhUpmzQL1wSWtcM0KJ4FCpeBalf",
+		api_key: api_key,
 		type: "GetFlight"
 	};
 	try {
@@ -31,7 +30,6 @@ export async function getFlight(flightid) {
 		});
 		console.log(res)
 		const json = await res.json();
-		console.log(json);
 		return json;
 	}
 	catch (err) {

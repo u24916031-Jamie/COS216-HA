@@ -8,27 +8,29 @@ u25090501
 */
 
 
-export function confirmBoarding(username, flightid, apikey) {
-	console.log(`User (${username}) has boarded flight (${flightid})`);
-	var req = new XMLHttpRequest();
-	req.onreadystatechange = function () {
-		if (this.readyState == 4 && this.status == 200) {
-			console.log(this.responseText);
-			var response = JSON.parse(this.responseText);
-			console.log(response);
-		} else if (this.readyState == 4) {
-			console.log(this.responseText);
-		}
-	};
-
-	req.open("POST", "wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php", true);
-	var data = {
+export async function confirmBoarding(flightid, api_key) {
+	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
+	const encoded = btoa(unencoded);
+	const data = {
 		flight_id: flightid,
-		api_key: apikey,
+		api_key: api_key,
 		type: "BoardFlight"
 	};
-	req.send(JSON.stringify(data));
+	try {
 
-
-	return true;
+		const res = await fetch("https://wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php", {
+			method: "POST",
+			headers: {
+				"Authorization": `Basic ${encoded}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await res.json();
+		return json;
+	}
+	catch (err) {
+		console.error("Network Error:", err)
+	}
+	return undefined;
 }

@@ -8,16 +8,15 @@ u25090501
 */
 
 
-export async function updateFlightPosition(flightid, current_latitude, current_longitude, status) {
+
+export async function getCoordinates(flightid, api_key) {
+
 	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
 	const encoded = btoa(unencoded);
 	const data = {
-		api_key: process.env.SERVERAPIKEY,
-		type: "UpdateFlightPosition",
 		flight_id: flightid,
-		current_latitude: current_latitude,
-		current_longitude: current_longitude,
-		status: status
+		api_key: api_key,
+		type: "GetCoordinates"
 	};
 	try {
 

@@ -1,0 +1,24 @@
+<!--
+  Tamlyn Khan
+  u24675815
+  Jamie King
+  u24916031
+  Isabella Engelbrecht
+  u25090501
+-->
+
+<div class="map-container">
+  <div id="leaflet-map"></div>
+
+  <div class="map-status-bar" *ngIf="currentStatus">
+    <span class="status-badge" [ngClass]="'status-' + currentStatus.toLowerCase().replace(' ', '-')">
+      {{ currentStatus }}
+    </span>
+    <span class="progress-label" *ngIf="currentProgress > 0">
+      Progress: {{ (currentProgress * 100).toFixed(1) }}%
+    </span>
+    <span class="coords-label" *ngIf="currentLat !== null">
+      {{ currentLat.toFixed(4) }}°, {{ currentLng?.toFixed(4) }}°
+    </span>
+  </div>
+</div>
