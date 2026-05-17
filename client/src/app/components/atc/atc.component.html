@@ -1,0 +1,191 @@
+<!--
+  Tamlyn Khan
+  u24675815
+  Jamie King
+  u24916031
+  Isabella Engelbrecht
+  u25090501
+-->
+
+<div class="dashboard-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">
+        <lucide-icon name="plane" [size]="22"></lucide-icon>
+      </span>
+      <div>
+        <div class="sidebar-title">FlightTrack</div>
+        <div class="sidebar-role atc-role">ATC</div>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <lucide-icon name="log-out" [size]="16"></lucide-icon>
+      </button>
+    </div>
+
+    <div class="section-label">All Flights</div>
+
+    <div *ngIf="loading" class="loading-text">Loading flights...</div>
+
+    <div *ngIf="!loading && flights.length === 0" class="empty-text">
+      No flights found.
+    </div>
+
+    <div class="flight-list">
+      <div
+        *ngFor="let flight of flights"
+        class="flight-card"
+        [class.selected]="selectedFlight?.id === flight.id"
+        (click)="selectFlight(flight)"
+      >
+        <div class="flight-number">{{ flight.flight_number }}</div>
+        <div class="flight-meta">
+          <span class="status-pill" [ngClass]="getStatusClass(flight.status)">{{ flight.status }}</span>
+          <span class="passenger-count" *ngIf="flight.passengers?.length">
+            {{ flight.passengers!.length }} pax
+          </span>
+        </div>
+        <div class="flight-actions">
+          <button
+            *ngIf="flight.status === 'Scheduled'"
+            class="dispatch-btn"
+            (click)="dispatchFlight(flight); $event.stopPropagation()"
+            [disabled]="dispatching || disconnected || serverShutdown"
+          >
+            <lucide-icon name="send" [size]="14"></lucide-icon>
+            Dispatch
+          </button>
+          <button
+            *ngIf="flight.status === 'In Flight' || flight.status === 'Boarding'"
+            class="track-btn"
+            (click)="trackFlight(flight); $event.stopPropagation()"
+          >
+            <lucide-icon name="radio" [size]="14"></lucide-icon>
+            Track Live
+          </button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <div *ngIf="serverShutdown" class="banner banner-shutdown">
+      <span class="banner-left">
+        <lucide-icon name="circle-x" [size]="16"></lucide-icon>
+        Server has shut down. All connections closed.
+      </span>
+    </div>
+    <div *ngIf="disconnected && !serverShutdown" class="banner banner-error">
+      <span class="banner-left">
+        <lucide-icon name="triangle-alert" [size]="16"></lucide-icon>
+        {{ wsError }}
+      </span>
+    </div>
+    <div *ngIf="errorMessage" class="banner banner-error">
+      <span class="banner-left">
+        <lucide-icon name="triangle-alert" [size]="16"></lucide-icon>
+        {{ errorMessage }}
+      </span>
+    </div>
+
+    <div *ngFor="let alert of noShowAlerts; let i = index" class="banner banner-noshow">
+      <span class="banner-left">
+        <lucide-icon name="circle-x" [size]="16"></lucide-icon>
+        {{ alert }}
+      </span>
+      <button class="dismiss-btn" (click)="dismissNoShow(i)">
+        <lucide-icon name="x" [size]="14"></lucide-icon>
+      </button>
+    </div>
+
+    <div *ngFor="let alert of boardingAlerts; let i = index" class="banner banner-boarding">
+      <span class="banner-left">
+        <lucide-icon name="circle-check" [size]="16"></lucide-icon>
+        {{ alert }}
+      </span>
+      <button class="dismiss-btn" (click)="dismissBoarding(i)">
+        <lucide-icon name="x" [size]="14"></lucide-icon>
+      </button>
+    </div>
+
+    <div *ngIf="selectedFlight" class="flight-detail-panel">
+      <div class="detail-header">
+        <div>
+          <h2 class="detail-title">Flight {{ selectedFlight.flight_number }}</h2>
+          <span class="status-pill" [ngClass]="getStatusClass(selectedFlight.status)">
+            {{ selectedFlight.status }}
+          </span>
+          <span *ngIf="selectedFlight.status === 'In Flight' && currentProgress > 0" class="progress-inline">
+            {{ (currentProgress * 100).toFixed(1) }}%
+          </span>
+        </div>
+        <div class="detail-actions">
+          <button
+            *ngIf="selectedFlight.status === 'Scheduled'"
+            class="dispatch-btn-lg"
+            (click)="dispatchFlight(selectedFlight)"
+            [disabled]="dispatching || disconnected || serverShutdown"
+          >
+            <lucide-icon name="send" [size]="14"></lucide-icon>
+            Dispatch Flight
+          </button>
+          <button
+            *ngIf="selectedFlight.status === 'In Flight' || selectedFlight.status === 'Boarding'"
+            class="track-btn-lg"
+            (click)="trackFlight(selectedFlight)"
+          >
+            <lucide-icon name="radio" [size]="14"></lucide-icon>
+            Track Live
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="selectedFlight.passengers && selectedFlight.passengers.length > 0">
+        <div class="section-label-sm">Passenger List</div>
+        <div class="passenger-list">
+          <div *ngFor="let pax of selectedFlight.passengers" class="passenger-row">
+            <span class="pax-name">{{ pax.username }}</span>
+            <span class="pax-status" [class.confirmed]="pax.boarding_confirmed">
+              <ng-container *ngIf="pax.boarding_confirmed">
+                <lucide-icon name="circle-check" [size]="16"></lucide-icon> Boarded
+              </ng-container>
+              <ng-container *ngIf="!pax.boarding_confirmed">
+                <lucide-icon name="clock" [size]="14"></lucide-icon> Pending
+              </ng-container>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedFlight.passengers || selectedFlight.passengers.length === 0"
+           class="empty-text no-pax">
+        No passengers booked on this flight.
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <div *ngIf="!trackedFlightId" class="map-placeholder">
+        <div class="placeholder-icon">
+          <lucide-icon name="map" [size]="48"></lucide-icon>
+        </div>
+        <p *ngIf="!selectedFlight">Select a flight from the sidebar to view details.</p>
+        <p *ngIf="selectedFlight && selectedFlight.status === 'Scheduled'">
+          Flight <strong>{{ selectedFlight.flight_number }}</strong> is scheduled. Dispatch it to begin tracking.
+        </p>
+        <p *ngIf="selectedFlight && (selectedFlight.status === 'In Flight' || selectedFlight.status === 'Boarding')">
+          Click <strong>Track Live</strong> to monitor this flight on the map.
+        </p>
+        <p *ngIf="selectedFlight && selectedFlight.status === 'Landed'">
+          Flight <strong>{{ selectedFlight.flight_number }}</strong> has already landed.
+        </p>
+      </div>
+      <app-map
+        *ngIf="airports.length > 0"
+        [airports]="airports"
+        [trackedFlightId]="trackedFlightId"
+      ></app-map>
+    </div>
+
+  </main>
+</div>

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "PowerShell(node --version)",
+      "PowerShell(ng --version 2>&1)",
+      "PowerShell($env:PATH -split \";\" | Where-Object { $_ -match \"node|npm\" })",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Program Files\\\\nodejs\\\\\" -ErrorAction SilentlyContinue | Select-Object -First 5; Get-ChildItem \"$env:APPDATA\\\\npm\\\\\" -ErrorAction SilentlyContinue | Select-Object -First 5)",
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\\" | Where-Object { $_.Name -match \"node|Node\" }; Get-ChildItem \"C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\\" | Where-Object { $_.Name -match \"node|npm\" })",
+      "PowerShell(& \"C:\\\\Program Files\\\\nodejs\\\\node.exe\" --version 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" --version 2>&1)",
+      "PowerShell(& \"C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\\\\ng.cmd\" version 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\" install -g @angular/cli 2>&1)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\"; ng new client --skip-git --style=css --routing --ssr=false --no-interactive 2>&1 | Select-Object -Last 10)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; npm install socket.io-client leaflet @types/leaflet 2>&1 | Select-Object -Last 5)",
+      "PowerShell($base = \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\app\"; New-Item -ItemType Directory -Force \"$base\\\\models\" | Out-Null; New-Item -ItemType Directory -Force \"$base\\\\services\" | Out-Null; New-Item -ItemType Directory -Force \"$base\\\\components\\\\login\" | Out-Null; New-Item -ItemType Directory -Force \"$base\\\\components\\\\passenger\" | Out-Null; New-Item -ItemType Directory -Force \"$base\\\\components\\\\atc\" | Out-Null; New-Item -ItemType Directory -Force \"$base\\\\components\\\\map\" | Out-Null; Write-Output \"Directories created\")",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; ng build 2>&1 | Select-Object -Last 25)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; ng build 2>&1 | Select-Object -Last 20)",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\environments\")",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; ng build 2>&1 | Select-Object -Last 12)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; npm install lucide-angular 2>&1 | Select-Object -Last 4)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; ng build 2>&1 | Select-Object -Last 10)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; node -e \"console.log\\(require\\('./node_modules/lucide-angular/package.json'\\).version\\)\")",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs\"; node -e \"const m = require\\('./node_modules/lucide-angular'\\); console.log\\(Object.keys\\(m\\).slice\\(0,20\\)\\)\" 2>&1 | Select-Object -First 5)",
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs;C:\\\\Users\\\\tamly\\\\AppData\\\\Roaming\\\\npm\"; Set-Location \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\"; ng build 2>&1 | Select-Object -Last 8)",
+      "PowerShell(\\(Get-Content \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\app\\\\services\\\\auth.service.ts\" -Raw\\) -replace 'localStorage', 'sessionStorage' | Set-Content \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\app\\\\services\\\\auth.service.ts\" -NoNewline; \\(Get-Content \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\app\\\\services\\\\websocket.service.ts\" -Raw\\) -replace 'localStorage', 'sessionStorage' | Set-Content \"C:\\\\Users\\\\tamly\\\\Desktop\\\\UNI WORK\\\\216\\\\COS216-HA\\\\client\\\\src\\\\app\\\\services\\\\websocket.service.ts\" -NoNewline; Write-Output \"done\")"
+    ]
+  }
+}
