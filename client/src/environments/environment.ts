@@ -9,5 +9,7 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3001/api'
+  apiUrl: 'https://wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php',
+  username: 'u24916031',
+  password: 'password'
 };

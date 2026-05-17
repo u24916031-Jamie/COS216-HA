@@ -14,6 +14,8 @@ import { environment } from '../../environments/environment';
 
 const API_URL = environment.apiUrl;
 
+const unencoded = `${environment.username}:${environment.password}`
+const encoded = btoa(unencoded);
 @Injectable({ providedIn: 'root' })
 export class ApiService
 {
@@ -22,7 +24,10 @@ export class ApiService
   {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+		headers: { 
+		"Authorization": `Basic ${encoded}`,
+		'Content-Type': 'application/json' 
+		},
       body: JSON.stringify(body)
     });
     const json = await res.json();
