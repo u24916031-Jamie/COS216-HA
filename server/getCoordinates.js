@@ -9,13 +9,13 @@ u25090501
 
 
 
-export async function getCoordinates(flightid) {
+export async function getCoordinates(flightid, api_key) {
 
 	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
 	const encoded = btoa(unencoded);
 	const data = {
 		flight_id: flightid,
-		api_key: process.env.APIKEY,
+		api_key: api_key,
 		type: "GetCoordinates"
 	};
 	try {

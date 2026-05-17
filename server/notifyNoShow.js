@@ -8,6 +8,6 @@ u25090501
 */
 
 
-export function notifyNoShow(username, flightid) {
-	console.log(`User (${username}) didn't show up for flight (${flightid})`);
+export async function notifyNoShow(ATC, flightid, username) {
+	ATC.socket.emit("NOSHOW", flightid, username);
 }

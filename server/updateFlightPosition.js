@@ -8,6 +8,32 @@ u25090501
 */
 
 
-export function updateFlightPosition(flightid, current_latitude, current_longitude, status) {
-	console.log(`Updating flight (${flightid}) to have progress (${progress})`);
+export async function updateFlightPosition(flightid, current_latitude, current_longitude, status) {
+	const unencoded = `${process.env.STUNUM}:${process.env.PASSWORD}`
+	const encoded = btoa(unencoded);
+	const data = {
+		api_key: process.env.SERVERAPIKEY,
+		type: "UpdateFlightPosition",
+		flight_id: flightid,
+		current_latitude: current_latitude,
+		current_longitude: current_longitude,
+		status: status
+	};
+	try {
+
+		const res = await fetch("https://wheatley.cs.up.ac.za/u24916031/COS216HA/api/api.php", {
+			method: "POST",
+			headers: {
+				"Authorization": `Basic ${encoded}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(data)
+		});
+		const json = await res.json();
+		return json;
+	}
+	catch (err) {
+		console.error("Network Error:", err)
+	}
+	return undefined;
 }
