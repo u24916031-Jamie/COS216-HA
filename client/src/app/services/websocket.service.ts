@@ -127,7 +127,7 @@ export class WebSocketService
 
   getStoredPort(): number
   {
-    return parseInt(sessionStorage.getItem('ft_port') ?? '3001');
+    return parseInt(sessionStorage.getItem('ft_port') ?? '1067');
   }
 
   isConnected(): boolean

@@ -28,7 +28,6 @@ export async function getFlight(flightid, api_key) {
 			},
 			body: JSON.stringify(data)
 		});
-		console.log(res)
 		const json = await res.json();
 		return json;
 	}
